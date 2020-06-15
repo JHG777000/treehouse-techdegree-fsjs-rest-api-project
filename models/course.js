@@ -11,8 +11,22 @@ module.exports = (sequelize) => {
         primaryKey: true,
       },
       userId: Sequelize.INTEGER,
-      title: Sequelize.STRING,
-      description: Sequelize.TEXT,
+      title: {
+        type: Sequelize.STRING,
+        validate: {
+          notEmpty: {
+            msg: '"title" is required',
+          },
+        },
+      },
+      description: {
+        type: Sequelize.TEXT,
+        validate: {
+          notEmpty: {
+            msg: '"description" is required',
+          },
+        },
+      },
       estimatedTime: {
         type: Sequelize.STRING,
         allowNull: true,
