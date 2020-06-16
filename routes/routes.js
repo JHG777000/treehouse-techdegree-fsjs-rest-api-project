@@ -45,6 +45,7 @@ const authenticateUser = async (req, res, next) => {
 
       // If the passwords match...
       if (authenticated) {
+        req.currentUser = user;
         console.log(
           `Authentication successful for username: ${user.firstName}`
         );
@@ -76,12 +77,15 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
+
+routes.get('/api/the_users', async (req, res) => {
+  const users = await models.User.findAll({});
+  res.json({ users });
+  res.status(200);
+});
+
 routes.get('/api/users', authenticateUser, (req, res) => {
-  const user = req.currentUser;
-  res.json({
-    name: user.name,
-    username: user.username,
-  });
+  res.json(req.currentUser);
   res.status(200);
 });
 
@@ -92,9 +96,9 @@ routes.post('/api/users', async (req, res) => {
     res.status(400).json({ message: 'Bad password!' });
   } else {
     req.body.password = bcrypt.hashSync(pswd, salt);
-
+    console.log(req.body);
     try {
-      const course = await models.User.create(req.body);
+      const user = await models.User.create(req.body);
       res.location('/');
       res.status(201).end();
     } catch (err) {
