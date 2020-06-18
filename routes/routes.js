@@ -82,16 +82,18 @@ routes.get('/api/users', authenticateUser, (req, res) => {
 });
 
 routes.post('/api/users', async (req, res) => {
-  let pswd = req.body.password;
   let salt = bcrypt.genSaltSync(10);
-  if (pswd === undefined) {
-    req.body.password = '';
-  } else {
-    req.body.password = bcrypt.hashSync(pswd, salt);
-    console.log(req.body);
+  if (req.body.password !== undefined) {
+    req.body.password = bcrypt.hashSync(req.body.password, salt);
   }
   try {
-    const user = await models.User.create(req.body);
+    const user = await models.User.create({
+      firstName: req.body.firstName === undefined ? '' : req.body.firstName,
+      lastName: req.body.lastName === undefined ? '' : req.body.lastName,
+      emailAddress:
+        req.body.emailAddress === undefined ? '' : req.body.emailAddress,
+      password: req.body.password === undefined ? '' : req.body.password,
+    });
     res.location('/');
     res.status(201).end();
   } catch (err) {
@@ -144,12 +146,14 @@ routes.get('/api/courses/:id', async (req, res) => {
 
 routes.post('/api/courses', authenticateUser, async (req, res) => {
   try {
-    console.log(req.body.userId);
     const course = await models.Course.create({
-      userId: (req.body.userId === undefined) ? req.currentUser.id : req.body.userId,
-      title: (req.body.title === undefined) ? '' : req.body.title,
-      description: (req.body.description === undefined) ? '' : req.body.description,
-      materialsNeeded: (req.body.materialsNeeded === undefined) ? '' : req.body.materialsNeeded,
+      userId:
+        req.body.userId === undefined ? req.currentUser.id : req.body.userId,
+      title: req.body.title === undefined ? '' : req.body.title,
+      description:
+        req.body.description === undefined ? '' : req.body.description,
+      materialsNeeded:
+        req.body.materialsNeeded === undefined ? '' : req.body.materialsNeeded,
     });
     res.location('/api/courses/' + course.id);
     res.status(201).end();
@@ -169,9 +173,13 @@ routes.put('/api/courses/:id', authenticateUser, async (req, res) => {
       try {
         await course.update({
           userId: req.body.userId,
-          title: (req.body.title === undefined) ? '' : req.body.title,
-          description: (req.body.description === undefined) ? '' : req.body.description,
-          materialsNeeded: (req.body.materialsNeeded === undefined) ? '' : req.body.materialsNeeded,
+          title: req.body.title === undefined ? '' : req.body.title,
+          description:
+            req.body.description === undefined ? '' : req.body.description,
+          materialsNeeded:
+            req.body.materialsNeeded === undefined
+              ? ''
+              : req.body.materialsNeeded,
         });
         res.status(204).end();
       } catch (err) {
