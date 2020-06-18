@@ -85,20 +85,20 @@ routes.post('/api/users', async (req, res) => {
   let pswd = req.body.password;
   let salt = bcrypt.genSaltSync(10);
   if (pswd === undefined) {
-    res.status(400).json({ message: 'Bad password!' });
+    req.body.password = '';
   } else {
     req.body.password = bcrypt.hashSync(pswd, salt);
     console.log(req.body);
-    try {
-      const user = await models.User.create(req.body);
-      res.location('/');
-      res.status(201).end();
-    } catch (err) {
-      if (err.name === 'SequelizeValidationError') {
-        res.status(400).json({ message: err.message });
-      } else {
-        res.status(500).json({ message: err.message });
-      }
+  }
+  try {
+    const user = await models.User.create(req.body);
+    res.location('/');
+    res.status(201).end();
+  } catch (err) {
+    if (err.name === 'SequelizeValidationError') {
+      res.status(400).json({ message: err.message });
+    } else {
+      res.status(500).json({ message: err.message });
     }
   }
 });
@@ -144,7 +144,13 @@ routes.get('/api/courses/:id', async (req, res) => {
 
 routes.post('/api/courses', authenticateUser, async (req, res) => {
   try {
-    const course = await models.Course.create(req.body);
+    console.log(req.body.userId);
+    const course = await models.Course.create({
+      userId: (req.body.userId === undefined) ? req.currentUser.id : req.body.userId,
+      title: (req.body.title === undefined) ? '' : req.body.title,
+      description: (req.body.description === undefined) ? '' : req.body.description,
+      materialsNeeded: (req.body.materialsNeeded === undefined) ? '' : req.body.materialsNeeded,
+    });
     res.location('/api/courses/' + course.id);
     res.status(201).end();
   } catch (err) {
@@ -161,7 +167,12 @@ routes.put('/api/courses/:id', authenticateUser, async (req, res) => {
     const course = await models.Course.findByPk(req.params.id);
     if (course.userId === req.currentUser.id) {
       try {
-        await course.update(req.body);
+        await course.update({
+          userId: req.body.userId,
+          title: (req.body.title === undefined) ? '' : req.body.title,
+          description: (req.body.description === undefined) ? '' : req.body.description,
+          materialsNeeded: (req.body.materialsNeeded === undefined) ? '' : req.body.materialsNeeded,
+        });
         res.status(204).end();
       } catch (err) {
         res.status(500).json({ message: err.message });
