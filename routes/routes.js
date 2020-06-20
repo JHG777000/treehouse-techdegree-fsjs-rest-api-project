@@ -97,7 +97,10 @@ routes.post('/api/users', async (req, res) => {
     res.location('/');
     res.status(201).end();
   } catch (err) {
-    if (err.name === 'SequelizeValidationError') {
+    if (
+      err.name === 'SequelizeValidationError' ||
+      err.name == 'SequelizeUniqueConstraintError'
+    ) {
       res.status(400).json({ message: err.message });
     } else {
       res.status(500).json({ message: err.message });
