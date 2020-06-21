@@ -200,7 +200,7 @@ routes.put('/api/courses/:id', authenticateUser, async (req, res) => {
         });
         res.status(204).end();
       } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(400).json({ message: err.message });
       }
     } else {
       res.status(403).json({ message: 'User does not own course.' });
