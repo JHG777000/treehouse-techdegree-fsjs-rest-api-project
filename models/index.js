@@ -23,7 +23,7 @@ const db = {
 db.models.User = require('./user.js')(sequelize);
 db.models.Course = require('./course.js')(sequelize);
 
-db.models.User.hasMany(db.models.Course);
+db.models.User.hasMany(db.models.Course, { foreignKey: 'userId' });
 db.models.Course.belongsTo(db.models.User);
 
 logConnection();

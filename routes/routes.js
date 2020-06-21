@@ -116,6 +116,7 @@ const sendCourses = (courses) => {
     ret_courses.push({
       id: courses[i].id,
       userId: courses[i].userId,
+      User: courses[i].User,
       title: courses[i].title,
       description: courses[i].description,
       materialsNeeded: courses[i].materialsNeeded,
@@ -126,24 +127,37 @@ const sendCourses = (courses) => {
 };
 
 routes.get('/api/courses', async (req, res) => {
-  const courses = await models.Course.findAll({});
+  const courses = await models.Course.findAll({
+    include: [
+      {
+        model: models.User,
+      },
+    ],
+  });
   res.json(sendCourses(courses));
   res.status(200);
 });
 
 routes.get('/api/courses/:id', async (req, res) => {
   try {
-    const course = await models.Course.findByPk(req.params.id);
+    const course = await models.Course.findByPk(req.params.id, {
+      include: [
+        {
+          model: models.User,
+        },
+      ],
+    });
     res.json({
       id: course.id,
       userId: course.userId,
+      User: course.User,
       title: course.title,
       description: course.description,
       materialsNeeded: course.materialsNeeded,
     });
     res.status(200);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: 'Could not find course.' });
   }
 });
 
@@ -192,7 +206,7 @@ routes.put('/api/courses/:id', authenticateUser, async (req, res) => {
       res.status(403).json({ message: 'User does not own course.' });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: 'Could not find course.' });
   }
 });
 
@@ -206,7 +220,7 @@ routes.delete('/api/courses/:id', authenticateUser, async (req, res) => {
       res.status(403).json({ message: 'User does not own course.' });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: 'Could not find course.' });
   }
 });
 
